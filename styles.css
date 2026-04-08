@@ -1,15 +1,17 @@
 :root {
-  --bg: #f5efe2;
-  --surface: #fffaf1;
+  --bg: #f4efe5;
+  --surface: #fff8ef;
   --surface-strong: #ffffff;
-  --line: #ded6c8;
-  --ink: #1d2b46;
-  --ink-soft: #5f6c84;
-  --accent: #ef6f5e;
-  --accent-soft: #ffe2d7;
-  --gold: #f2ba52;
-  --mint: #dff3ea;
-  --shadow: 0 18px 42px rgba(29, 43, 70, 0.1);
+  --line: #dfd5c7;
+  --ink: #1b2944;
+  --ink-soft: #61708b;
+  --accent: #ef6d5b;
+  --accent-deep: #d95444;
+  --accent-soft: #ffe0d7;
+  --sun: #f2b94d;
+  --mint: #d8f0e4;
+  --sky: #dfeefe;
+  --shadow: 0 20px 44px rgba(27, 41, 68, 0.12);
 }
 
 * {
@@ -26,8 +28,9 @@ body {
   font-family: "Avenir Next", "Trebuchet MS", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(242, 186, 82, 0.22), transparent 26%),
-    linear-gradient(180deg, #fffaf0 0%, var(--bg) 100%);
+    radial-gradient(circle at top left, rgba(242, 185, 77, 0.2), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(216, 240, 228, 0.5), transparent 28%),
+    linear-gradient(180deg, #fffaf1 0%, var(--bg) 100%);
 }
 
 button,
@@ -41,10 +44,10 @@ button {
 }
 
 .app-shell {
-  width: min(100%, 540px);
+  width: min(100%, 560px);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 18px 16px 96px;
+  padding: 18px 16px 94px;
 }
 
 .app-header {
@@ -53,6 +56,10 @@ button {
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 18px;
+}
+
+.brand-lockup {
+  min-width: 0;
 }
 
 .eyebrow,
@@ -64,18 +71,24 @@ button {
   color: var(--ink-soft);
 }
 
-.app-header h1,
+#page-title,
 .hero-card h2,
 .page-intro h2,
 .lesson-hero h2,
-.lesson-section h3 {
+.lesson-section h3,
+.focus-card h3 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
   line-height: 1.05;
 }
 
-.app-header h1 {
-  font-size: 2rem;
+#page-title {
+  font-size: 2.1rem;
+}
+
+.header-subtitle {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
 }
 
 .top-action,
@@ -83,9 +96,10 @@ button {
 .secondary-btn,
 .nav-btn,
 .skill-select-btn,
-.listen-btn,
+.lesson-tab,
 .back-link,
-.quiz-option {
+.filter-chip,
+.meta-chip {
   border-radius: 18px;
   transition:
     transform 140ms ease,
@@ -95,26 +109,29 @@ button {
 }
 
 .top-action,
-.secondary-btn,
 .primary-btn,
-.listen-btn,
-.back-link {
+.secondary-btn,
+.skill-select-btn,
+.lesson-tab,
+.back-link,
+.filter-chip {
   padding: 12px 14px;
   font-weight: 700;
 }
 
 .top-action,
 .secondary-btn,
-.listen-btn,
-.back-link {
-  background: rgba(29, 43, 70, 0.07);
+.skill-select-btn,
+.back-link,
+.filter-chip {
+  background: rgba(27, 41, 68, 0.06);
   color: var(--ink);
 }
 
 .primary-btn {
   background: linear-gradient(135deg, var(--accent), #ff9374);
   color: #fff;
-  box-shadow: 0 12px 24px rgba(239, 111, 94, 0.25);
+  box-shadow: 0 12px 24px rgba(239, 109, 91, 0.24);
 }
 
 .app-main {
@@ -130,20 +147,25 @@ button {
   display: grid;
 }
 
-.card {
-  padding: 18px;
+.card,
+.hero-card,
+.lesson-panel {
   border: 1px solid var(--line);
   border-radius: 28px;
-  background: rgba(255, 250, 241, 0.9);
+  background: rgba(255, 248, 239, 0.92);
   box-shadow: var(--shadow);
 }
 
+.card,
+.lesson-panel {
+  padding: 18px;
+}
+
 .hero-card {
-  padding: 22px;
-  border-radius: 30px;
+  padding: 24px;
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(255, 240, 220, 0.88)),
-    radial-gradient(circle at top right, rgba(242, 186, 82, 0.12), transparent 32%);
+    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(255, 234, 216, 0.92)),
+    radial-gradient(circle at top right, rgba(242, 185, 77, 0.12), transparent 30%);
 }
 
 .hero-card h2,
@@ -154,64 +176,113 @@ button {
 
 .hero-card p,
 .card p,
-.section-note,
+.practice-caption,
 .quiz-feedback,
-.skill-card-summary {
+.tip-text {
   color: var(--ink-soft);
   line-height: 1.55;
 }
 
 .hero-actions,
 .editor-actions,
-.word-stage-actions {
+.stage-actions,
+.focus-meta,
+.lesson-meta,
+.filter-row,
+.tag-list {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
 }
 
-.current-card,
-.mini-grid,
-.skills-list,
-.practice-list,
-.sentence-list,
-.preview-list,
-.quiz-options {
-  display: grid;
-  gap: 12px;
-}
-
-.current-card {
-  align-items: center;
-}
-
-.current-card strong {
-  display: block;
-}
-
-.mini-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.mini-card strong {
-  display: block;
-  font-size: 1.2rem;
-  color: var(--ink);
-}
-
-.step-list {
-  margin: 0;
-  padding-left: 20px;
-  color: var(--ink);
-  line-height: 1.7;
-}
-
+.focus-card,
 .page-intro,
 .lesson-hero,
 .lesson-section,
-.word-stage {
+.word-stage,
+.practice-stage,
+.quiz-card,
+.journey-card {
   display: grid;
   gap: 12px;
+}
+
+.home-grid,
+.skills-list,
+.preview-list {
+  display: grid;
+  gap: 12px;
+}
+
+.journey-steps {
+  display: grid;
+  gap: 10px;
+}
+
+.journey-step {
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+}
+
+.journey-step strong,
+.quick-card strong {
+  display: block;
+  color: var(--ink);
+}
+
+.lesson-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lesson-tab {
+  background: rgba(27, 41, 68, 0.06);
+  color: var(--ink-soft);
+}
+
+.lesson-tab.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.lesson-panel {
+  display: none;
+  gap: 14px;
+}
+
+.lesson-panel.active {
+  display: grid;
+}
+
+.section-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.meta-chip,
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+}
+
+.meta-chip {
+  padding: 8px 12px;
+  background: var(--mint);
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.filter-chip.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-color: rgba(239, 109, 91, 0.24);
 }
 
 .skills-list {
@@ -222,23 +293,15 @@ button {
   display: grid;
   gap: 12px;
   padding: 16px;
-  border: 1px solid var(--line);
   border-radius: 24px;
+  border: 1px solid var(--line);
   background: var(--surface);
 }
 
-.skill-card-top,
-.section-row,
-.word-stage-top,
-.sentence-row,
-.practice-row {
+.skill-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: 12px;
-}
-
-.section-row.tight {
   align-items: flex-start;
 }
 
@@ -247,75 +310,76 @@ button {
   font-size: 1.35rem;
 }
 
-.skill-pill,
-.meta-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: var(--mint);
-  color: var(--ink);
-  font-size: 0.84rem;
-  font-weight: 700;
+.skill-card .meta-chip:nth-child(2) {
+  background: var(--sky);
 }
 
-.skill-select-btn {
-  width: 100%;
-  padding: 12px 14px;
-  background: rgba(29, 43, 70, 0.06);
-  color: var(--ink);
-  font-weight: 700;
-}
-
-.lesson-meta {
+.skill-examples {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.practice-item,
-.sentence-item,
-.preview-item {
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: var(--surface-strong);
+.skill-example-pill,
+.tag-pill {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(27, 41, 68, 0.06);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
-.practice-word,
+.skill-select-btn {
+  width: 100%;
+}
+
+.practice-display,
 .word-display {
+  padding: 30px 18px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(255, 234, 216, 0.9));
   font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.8rem, 11vw, 4.1rem);
+  line-height: 1;
+  text-align: center;
 }
 
-.practice-word {
-  font-size: 1.8rem;
+.sentence-display {
+  margin: 0;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  color: var(--ink);
+  font-size: 1.12rem;
+  line-height: 1.6;
 }
 
-.practice-note {
-  display: block;
-  margin-top: 4px;
-  color: var(--ink-soft);
-}
-
-.listen-btn {
-  min-width: 100px;
+.practice-caption {
+  margin: 0;
+  text-align: center;
 }
 
 .quiz-prompt {
   margin: 0;
-  min-height: 72px;
+  min-height: 60px;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--ink);
 }
 
 .quiz-options {
-  grid-template-columns: 1fr;
+  display: grid;
+  gap: 10px;
 }
 
 .quiz-option {
   width: 100%;
   padding: 14px;
+  border-radius: 20px;
   border: 1px solid var(--line);
   background: var(--surface-strong);
   text-align: left;
@@ -346,27 +410,23 @@ button {
   color: #c35d4a;
 }
 
-.word-stage {
-  text-align: center;
-}
-
-.word-display {
-  padding: 28px 18px;
-  border-radius: 28px;
-  border: 1px solid var(--line);
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(255, 233, 212, 0.9));
-  font-size: 3.4rem;
-  line-height: 1;
-}
-
 .preview-list {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .preview-item {
-  font-weight: 700;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
   text-align: center;
+  font-weight: 700;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.preview-item.active {
+  background: var(--accent-soft);
+  border-color: rgba(239, 109, 91, 0.28);
 }
 
 textarea {
@@ -375,7 +435,7 @@ textarea {
   padding: 14px;
   border-radius: 20px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--ink);
   resize: vertical;
 }
@@ -389,15 +449,15 @@ textarea {
   left: 50%;
   bottom: 12px;
   transform: translateX(-50%);
-  width: min(calc(100% - 24px), 520px);
+  width: min(calc(100% - 24px), 540px);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding: 10px;
-  border: 1px solid rgba(29, 43, 70, 0.08);
+  border: 1px solid rgba(27, 41, 68, 0.08);
   border-radius: 24px;
-  background: rgba(255, 250, 241, 0.95);
-  box-shadow: 0 16px 36px rgba(29, 43, 70, 0.14);
+  background: rgba(255, 248, 239, 0.96);
+  box-shadow: 0 18px 36px rgba(27, 41, 68, 0.14);
   backdrop-filter: blur(10px);
 }
 
@@ -409,7 +469,7 @@ textarea {
 }
 
 .nav-btn.active {
-  background: rgba(239, 111, 94, 0.12);
+  background: var(--accent-soft);
   color: var(--ink);
 }
 
@@ -418,28 +478,32 @@ textarea {
 .secondary-btn:hover,
 .nav-btn:hover,
 .skill-select-btn:hover,
-.listen-btn:hover,
+.lesson-tab:hover,
 .back-link:hover,
+.filter-chip:hover,
 .quiz-option:hover {
   transform: translateY(-1px);
 }
 
-@media (min-width: 700px) {
+@media (min-width: 760px) {
   .app-shell {
     width: min(100%, 920px);
   }
 
-  .mini-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .home-grid {
+    grid-template-columns: 1.4fr 1fr 1fr;
   }
 
   .skills-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .practice-list,
-  .sentence-list {
+  .lesson-panel.active {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lesson-panel[data-lesson-panel="check"].active {
+    grid-template-columns: 1fr;
   }
 
   .preview-list {

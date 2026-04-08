@@ -9,94 +9,90 @@
   <body>
     <div class="app-shell">
       <header class="app-header">
-        <div>
-          <p class="eyebrow">Phone Reading Practice</p>
+        <div class="brand-lockup">
+          <p class="eyebrow">Reading Practice App</p>
           <h1 id="page-title">Home</h1>
+          <p class="header-subtitle" id="header-subtitle">One clear skill at a time.</p>
         </div>
-        <button class="top-action" id="quick-continue" type="button">
-          Continue Skill
-        </button>
+        <button class="top-action" id="quick-continue" type="button">Open Current Skill</button>
       </header>
 
       <main class="app-main">
         <section class="page active" data-page="home">
           <article class="hero-card">
-            <p class="eyebrow">Built For Practice</p>
-            <h2>Clear lessons, calm audio, and one skill at a time.</h2>
+            <p class="eyebrow">Today&apos;s Flow</p>
+            <h2>Learn the pattern, say the word, then check the pattern.</h2>
             <p>
-              Leo reads the word first, then taps to hear the correct
-              pronunciation and compare it to what he said. Pattern Check is the
-              only place that keeps score.
+              This app is built around one simple rhythm. Leo learns one sound pattern,
+              reads a few example words, listens to the correct pronunciation, and only
+              then takes a short Pattern Check.
             </p>
             <div class="hero-actions">
-              <button class="primary-btn" type="button" data-page-link="skills">
-                Open Phonics Skills
-              </button>
-              <button class="secondary-btn" type="button" data-page-link="words">
-                Practice Word Cards
-              </button>
+              <button class="primary-btn" type="button" id="home-start-skill">Start Current Skill</button>
+              <button class="secondary-btn" type="button" data-page-link="skills">Choose Another Skill</button>
             </div>
           </article>
 
-          <article class="card current-card">
-            <div class="card-copy">
+          <article class="card focus-card">
+            <div>
               <p class="section-label">Current Skill</p>
               <h3 id="home-current-skill">Short A</h3>
               <p id="home-current-summary"></p>
             </div>
-            <button class="primary-btn" id="home-open-skill" type="button">
-              Start This Skill
-            </button>
+            <div class="focus-meta">
+              <span class="meta-chip" id="home-current-category">Short Vowels</span>
+              <span class="meta-chip" id="home-pattern-score">No score yet</span>
+            </div>
           </article>
 
-          <div class="mini-grid">
-            <article class="card mini-card">
+          <div class="home-grid">
+            <article class="card journey-card">
+              <p class="section-label">How This Lesson Works</p>
+              <div class="journey-steps">
+                <div class="journey-step">
+                  <strong>1. Learn</strong>
+                  <span>See the pattern and hear the focus words.</span>
+                </div>
+                <div class="journey-step">
+                  <strong>2. Practice</strong>
+                  <span>Read words and sentences, then tap to compare.</span>
+                </div>
+                <div class="journey-step">
+                  <strong>3. Check</strong>
+                  <span>Answer a few pattern questions tied to the same skill.</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="card quick-card">
               <p class="section-label">Skill Library</p>
               <strong id="skill-count">0 skills</strong>
-              <p>Choose from a larger phonics library as Leo grows.</p>
+              <p>Short vowels, sneaky h, tricky y, bossy r, word endings, and more.</p>
             </article>
 
-            <article class="card mini-card">
-              <p class="section-label">Pattern Check</p>
-              <strong id="home-pattern-score">No score yet</strong>
-              <p>Pattern Check tracks correct answers for the selected skill.</p>
-            </article>
-
-            <article class="card mini-card">
-              <p class="section-label">High-Frequency Words</p>
+            <article class="card quick-card">
+              <p class="section-label">Word Cards</p>
               <strong id="home-word-count">0 saved words</strong>
-              <p>Your own word list is saved on this phone.</p>
+              <p>Your own high-frequency word deck stays on this phone.</p>
             </article>
-          </div>
-
-          <div class="card next-step-card">
-            <p class="section-label">How This App Works</p>
-            <ol class="step-list">
-              <li>Pick one phonics skill.</li>
-              <li>Read each example word out loud.</li>
-              <li>Tap Hear Word to compare the correct pronunciation.</li>
-              <li>Use Pattern Check to see if the pattern is sticking.</li>
-            </ol>
           </div>
         </section>
 
         <section class="page" data-page="skills">
           <article class="card page-intro">
             <p class="section-label">Phonics Skill Library</p>
-            <h2>Choose exactly what Leo is working on.</h2>
+            <h2>Choose the exact reading pattern to practice.</h2>
             <p>
-              Every skill opens its own lesson page with examples, sentence
-              practice, and a Pattern Check tied to that specific pattern.
+              Each skill opens one guided lesson with a clear learn, practice, and check flow.
             </p>
           </article>
 
+          <div class="filter-row" id="skill-filters"></div>
           <div class="skills-list" id="skills-list"></div>
         </section>
 
         <section class="page" data-page="lesson">
-          <button class="back-link" type="button" data-page-link="skills">
-            Back to all skills
-          </button>
+          <button class="back-link" type="button" data-page-link="skills">Back to skills</button>
 
           <article class="card lesson-hero">
             <div>
@@ -105,89 +101,110 @@
               <p id="lesson-summary"></p>
             </div>
             <div class="lesson-meta">
-              <span class="meta-chip" id="lesson-focus">short a</span>
-              <span class="meta-chip" id="lesson-score">Pattern Check: 0/0</span>
+              <span class="meta-chip" id="lesson-category-chip">Short Vowels</span>
+              <span class="meta-chip" id="lesson-focus-chip">short a like in cat</span>
             </div>
           </article>
 
-          <article class="card lesson-section">
-            <div class="section-row">
-              <div>
-                <p class="section-label">What We&apos;re Learning</p>
-                <h3 id="lesson-focus-title"></h3>
+          <div class="lesson-tabs">
+            <button class="lesson-tab active" type="button" data-lesson-tab="learn">Step 1 Learn</button>
+            <button class="lesson-tab" type="button" data-lesson-tab="practice">Step 2 Practice</button>
+            <button class="lesson-tab" type="button" data-lesson-tab="check">Step 3 Check</button>
+          </div>
+
+          <section class="lesson-panel active" data-lesson-panel="learn">
+            <article class="card lesson-section">
+              <p class="section-label">What Leo Is Learning</p>
+              <h3 id="learn-focus-title"></h3>
+              <p id="learn-description"></p>
+              <p class="tip-text" id="learn-tip"></p>
+              <button class="secondary-btn" id="hear-skill" type="button">Hear Focus Words</button>
+            </article>
+
+            <article class="card lesson-section">
+              <p class="section-label">Pattern Snapshots</p>
+              <div class="tag-list" id="learn-tags"></div>
+            </article>
+          </section>
+
+          <section class="lesson-panel" data-lesson-panel="practice">
+            <article class="card lesson-section practice-stage">
+              <div class="section-row">
+                <div>
+                  <p class="section-label" id="example-position">Example 1 of 4</p>
+                  <h3>Word Practice</h3>
+                </div>
+                <button class="secondary-btn" id="hear-example" type="button">Hear Word</button>
               </div>
-              <button class="secondary-btn" id="hear-skill" type="button">
-                Hear Focus Words
-              </button>
-            </div>
-            <p id="lesson-focus-text"></p>
-          </article>
 
-          <article class="card lesson-section">
-            <p class="section-label">Read And Check</p>
-            <h3>Example words</h3>
-            <p class="section-note">
-              Leo reads the word first. Then he taps Hear Word to compare the
-              correct pronunciation.
-            </p>
-            <div class="practice-list" id="example-list"></div>
-          </article>
+              <div class="practice-display" id="example-word">cat</div>
+              <p class="practice-caption" id="example-note"></p>
 
-          <article class="card lesson-section">
-            <p class="section-label">Use It In Context</p>
-            <h3>Sentence practice</h3>
-            <p class="section-note">
-              These short sentences keep the skill connected to real reading.
-            </p>
-            <div class="sentence-list" id="sentence-list"></div>
-          </article>
+              <div class="stage-actions">
+                <button class="secondary-btn" id="prev-example" type="button">Previous</button>
+                <button class="primary-btn" id="next-example" type="button">Next Word</button>
+              </div>
+            </article>
 
-          <article class="card lesson-section quiz-card">
-            <p class="section-label">Pattern Check</p>
-            <div class="section-row tight">
-              <h3 id="quiz-progress">Question 1</h3>
-              <button class="secondary-btn" id="next-question" type="button">
-                Next
-              </button>
-            </div>
-            <p class="quiz-prompt" id="quiz-prompt"></p>
-            <div class="quiz-options" id="quiz-options"></div>
-            <p class="quiz-feedback" id="quiz-feedback"></p>
-          </article>
+            <article class="card lesson-section practice-stage">
+              <div class="section-row">
+                <div>
+                  <p class="section-label" id="sentence-position">Sentence 1 of 2</p>
+                  <h3>Sentence Practice</h3>
+                </div>
+                <button class="secondary-btn" id="hear-sentence" type="button">Hear Sentence</button>
+              </div>
+
+              <p class="sentence-display" id="sentence-text"></p>
+
+              <div class="stage-actions">
+                <button class="secondary-btn" id="prev-sentence" type="button">Previous</button>
+                <button class="primary-btn" id="next-sentence" type="button">Next Sentence</button>
+              </div>
+            </article>
+          </section>
+
+          <section class="lesson-panel" data-lesson-panel="check">
+            <article class="card lesson-section quiz-card">
+              <div class="section-row">
+                <div>
+                  <p class="section-label">Pattern Check</p>
+                  <h3 id="quiz-status">Question 1 of 3</h3>
+                </div>
+                <button class="secondary-btn" id="restart-check" type="button">Restart</button>
+              </div>
+
+              <p class="quiz-prompt" id="quiz-prompt"></p>
+              <div class="quiz-options" id="quiz-options"></div>
+              <p class="quiz-feedback" id="quiz-feedback"></p>
+              <button class="primary-btn" id="next-question" type="button">Next Question</button>
+            </article>
+          </section>
         </section>
 
         <section class="page" data-page="words">
           <article class="card page-intro">
             <p class="section-label">High-Frequency Words</p>
-            <h2>Simple word cards, no flipping.</h2>
+            <h2>Say the word first, then tap to hear it.</h2>
             <p>
-              Leo reads the word, taps Hear Word to compare, then moves to the
-              next card. This area is for repetition, not points.
+              This page is just for repetition. No flipping, no extra game mechanic, just clean practice.
             </p>
           </article>
 
           <article class="card word-stage">
-            <div class="word-stage-top">
+            <div class="section-row">
               <p class="section-label" id="word-progress">Word 1 of 1</p>
-              <button class="secondary-btn" id="shuffle-words" type="button">
-                Shuffle
-              </button>
+              <button class="secondary-btn" id="shuffle-words" type="button">Shuffle</button>
             </div>
 
             <div class="word-display" id="current-word">the</div>
+            <p class="practice-caption" id="word-stage-note"></p>
 
-            <div class="word-stage-actions">
-              <button class="primary-btn" id="hear-current-word" type="button">
-                Hear Word
-              </button>
-              <button class="secondary-btn" id="next-word" type="button">
-                Next
-              </button>
+            <div class="stage-actions">
+              <button class="secondary-btn" id="prev-word" type="button">Previous</button>
+              <button class="primary-btn" id="hear-current-word" type="button">Hear Word</button>
+              <button class="secondary-btn" id="next-word" type="button">Next</button>
             </div>
-
-            <p class="section-note" id="word-stage-note">
-              Add or update your words in Parent Setup.
-            </p>
           </article>
 
           <article class="card lesson-section">
@@ -200,10 +217,9 @@
         <section class="page" data-page="parent">
           <article class="card page-intro">
             <p class="section-label">Parent Setup</p>
-            <h2>Manage Leo&apos;s high-frequency word cards.</h2>
+            <h2>Update Leo&apos;s high-frequency word list.</h2>
             <p>
-              Paste words one per line, or separated by commas and spaces. They
-              save on this device and appear in the word-card page right away.
+              Paste words one per line, or separated by commas and spaces. They save on this device.
             </p>
           </article>
 
@@ -215,15 +231,9 @@
               placeholder="the&#10;and&#10;said&#10;come&#10;what"
             ></textarea>
             <div class="editor-actions">
-              <button class="primary-btn" id="save-word-list" type="button">
-                Save Word List
-              </button>
-              <button class="secondary-btn" id="load-default-list" type="button">
-                Load Starter List
-              </button>
-              <button class="secondary-btn" type="button" data-page-link="words">
-                Open Word Cards
-              </button>
+              <button class="primary-btn" id="save-word-list" type="button">Save Word List</button>
+              <button class="secondary-btn" id="load-default-list" type="button">Load Starter List</button>
+              <button class="secondary-btn" type="button" data-page-link="words">Open Word Cards</button>
             </div>
             <p class="quiz-feedback" id="parent-feedback"></p>
           </article>
@@ -231,18 +241,10 @@
       </main>
 
       <nav class="bottom-nav" aria-label="Main navigation">
-        <button class="nav-btn active" type="button" data-page-link="home">
-          Home
-        </button>
-        <button class="nav-btn" type="button" data-page-link="skills">
-          Skills
-        </button>
-        <button class="nav-btn" type="button" data-page-link="words">
-          Words
-        </button>
-        <button class="nav-btn" type="button" data-page-link="parent">
-          Parent
-        </button>
+        <button class="nav-btn active" type="button" data-page-link="home">Home</button>
+        <button class="nav-btn" type="button" data-page-link="skills">Skills</button>
+        <button class="nav-btn" type="button" data-page-link="words">Words</button>
+        <button class="nav-btn" type="button" data-page-link="parent">Parent</button>
       </nav>
     </div>
 

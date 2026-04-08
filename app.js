@@ -402,11 +402,24 @@ const phonicsSkills = [
   },
 ];
 
+const skillCategories = [
+  { id: "all", label: "All Skills" },
+  { id: "short-vowels", label: "Short Vowels" },
+  { id: "teams-blends", label: "Teams And Blends" },
+  { id: "long-vowels", label: "Long Vowels" },
+  { id: "tricky-patterns", label: "Tricky Patterns" },
+  { id: "word-endings", label: "Word Endings" },
+];
+
 const state = {
   page: "home",
   activeSkillId: phonicsSkills[0].id,
+  skillFilter: "all",
+  lessonTab: "learn",
   wordVault: [],
   currentWordIndex: 0,
+  exampleIndexBySkill: {},
+  sentenceIndexBySkill: {},
   quizStateBySkill: {},
 };
 
@@ -417,38 +430,56 @@ const storageKeys = {
 
 const elements = {
   pageTitle: document.querySelector("#page-title"),
+  headerSubtitle: document.querySelector("#header-subtitle"),
   pages: [...document.querySelectorAll(".page")],
   navButtons: [...document.querySelectorAll(".nav-btn")],
   pageLinks: [...document.querySelectorAll("[data-page-link]")],
   quickContinue: document.querySelector("#quick-continue"),
+  homeStartSkill: document.querySelector("#home-start-skill"),
   skillCount: document.querySelector("#skill-count"),
   homeCurrentSkill: document.querySelector("#home-current-skill"),
   homeCurrentSummary: document.querySelector("#home-current-summary"),
-  homeOpenSkill: document.querySelector("#home-open-skill"),
+  homeCurrentCategory: document.querySelector("#home-current-category"),
   homePatternScore: document.querySelector("#home-pattern-score"),
   homeWordCount: document.querySelector("#home-word-count"),
+  skillFilters: document.querySelector("#skill-filters"),
   skillsList: document.querySelector("#skills-list"),
   lessonTitle: document.querySelector("#lesson-title"),
   lessonSummary: document.querySelector("#lesson-summary"),
-  lessonFocus: document.querySelector("#lesson-focus"),
-  lessonScore: document.querySelector("#lesson-score"),
-  lessonFocusTitle: document.querySelector("#lesson-focus-title"),
-  lessonFocusText: document.querySelector("#lesson-focus-text"),
+  lessonCategoryChip: document.querySelector("#lesson-category-chip"),
+  lessonFocusChip: document.querySelector("#lesson-focus-chip"),
+  lessonTabs: [...document.querySelectorAll("[data-lesson-tab]")],
+  lessonPanels: [...document.querySelectorAll("[data-lesson-panel]")],
+  learnFocusTitle: document.querySelector("#learn-focus-title"),
+  learnDescription: document.querySelector("#learn-description"),
+  learnTip: document.querySelector("#learn-tip"),
+  learnTags: document.querySelector("#learn-tags"),
   hearSkill: document.querySelector("#hear-skill"),
-  exampleList: document.querySelector("#example-list"),
-  sentenceList: document.querySelector("#sentence-list"),
-  quizProgress: document.querySelector("#quiz-progress"),
+  examplePosition: document.querySelector("#example-position"),
+  exampleWord: document.querySelector("#example-word"),
+  exampleNote: document.querySelector("#example-note"),
+  hearExample: document.querySelector("#hear-example"),
+  prevExample: document.querySelector("#prev-example"),
+  nextExample: document.querySelector("#next-example"),
+  sentencePosition: document.querySelector("#sentence-position"),
+  sentenceText: document.querySelector("#sentence-text"),
+  hearSentence: document.querySelector("#hear-sentence"),
+  prevSentence: document.querySelector("#prev-sentence"),
+  nextSentence: document.querySelector("#next-sentence"),
+  quizStatus: document.querySelector("#quiz-status"),
   quizPrompt: document.querySelector("#quiz-prompt"),
   quizOptions: document.querySelector("#quiz-options"),
   quizFeedback: document.querySelector("#quiz-feedback"),
   nextQuestion: document.querySelector("#next-question"),
+  restartCheck: document.querySelector("#restart-check"),
   wordProgress: document.querySelector("#word-progress"),
   currentWord: document.querySelector("#current-word"),
+  wordStageNote: document.querySelector("#word-stage-note"),
   hearCurrentWord: document.querySelector("#hear-current-word"),
+  prevWord: document.querySelector("#prev-word"),
   nextWord: document.querySelector("#next-word"),
   shuffleWords: document.querySelector("#shuffle-words"),
   wordPreview: document.querySelector("#word-preview"),
-  wordStageNote: document.querySelector("#word-stage-note"),
   wordListInput: document.querySelector("#word-list-input"),
   saveWordList: document.querySelector("#save-word-list"),
   loadDefaultList: document.querySelector("#load-default-list"),
@@ -459,12 +490,50 @@ function getSkill(skillId = state.activeSkillId) {
   return phonicsSkills.find((skill) => skill.id === skillId) ?? phonicsSkills[0];
 }
 
-function ensureQuizState(skillId) {
+function getSkillCategoryId(skillId) {
+  if (["short-a", "short-e", "short-i", "short-o", "short-u"].includes(skillId)) {
+    return "short-vowels";
+  }
+
+  if (["sneaky-h", "beginning-blends", "ending-blends", "glued-sounds"].includes(skillId)) {
+    return "teams-blends";
+  }
+
+  if (["magic-e", "vowel-teams", "oi-oy", "ou-ow", "oo-sounds", "aw-au"].includes(skillId)) {
+    return "long-vowels";
+  }
+
+  if (["bossy-r", "tricky-y", "soft-c-soft-g", "kn-wr"].includes(skillId)) {
+    return "tricky-patterns";
+  }
+
+  if (["double-endings", "ending-le"].includes(skillId)) {
+    return "word-endings";
+  }
+
+  return "all";
+}
+
+function getSkillCategoryLabel(skillId) {
+  const categoryId = getSkillCategoryId(skillId);
+  return skillCategories.find((category) => category.id === categoryId)?.label ?? "Phonics Skill";
+}
+
+function ensureSkillState(skillId) {
+  if (typeof state.exampleIndexBySkill[skillId] !== "number") {
+    state.exampleIndexBySkill[skillId] = 0;
+  }
+
+  if (typeof state.sentenceIndexBySkill[skillId] !== "number") {
+    state.sentenceIndexBySkill[skillId] = 0;
+  }
+
   if (!state.quizStateBySkill[skillId]) {
     state.quizStateBySkill[skillId] = {
       index: 0,
       correct: 0,
       answered: false,
+      finished: false,
       lastScore: null,
     };
   }
@@ -502,47 +571,9 @@ function speakText(text, rate = 0.78) {
 function setFeedback(element, message = "", type = "") {
   element.textContent = message;
   element.classList.remove("success", "error");
+
   if (type) {
     element.classList.add(type);
-  }
-}
-
-function navigate(pageName) {
-  state.page = pageName;
-
-  elements.pages.forEach((page) => {
-    page.classList.toggle("active", page.dataset.page === pageName);
-  });
-
-  elements.navButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.pageLink === pageName);
-  });
-
-  const titles = {
-    home: "Home",
-    skills: "Phonics Skills",
-    lesson: getSkill().title,
-    words: "Word Cards",
-    parent: "Parent Setup",
-  };
-
-  elements.pageTitle.textContent = titles[pageName] ?? "Leo Learns!";
-  renderHome();
-
-  if (pageName === "skills") {
-    renderSkillsList();
-  }
-
-  if (pageName === "lesson") {
-    renderLesson();
-  }
-
-  if (pageName === "words") {
-    renderWordCards();
-  }
-
-  if (pageName === "parent") {
-    elements.wordListInput.value = state.wordVault.join("\n");
   }
 }
 
@@ -593,14 +624,81 @@ function shuffle(list) {
 }
 
 function getScoreLabel(skillId = state.activeSkillId) {
-  const quizState = ensureQuizState(skillId);
+  const quizState = ensureSkillState(skillId);
   const total = getSkill(skillId).quizQuestions.length;
 
   if (quizState.lastScore === null) {
     return "No score yet";
   }
 
-  return `${quizState.lastScore}/${total} correct last time`;
+  return `${quizState.lastScore}/${total} correct`;
+}
+
+function updateHeader() {
+  const skill = getSkill();
+  const pageConfig = {
+    home: { title: "Home", subtitle: "One clear skill at a time." },
+    skills: { title: "Skills", subtitle: "Choose the reading pattern you want to teach." },
+    lesson: { title: skill.title, subtitle: "Learn, practice, and check the same exact skill." },
+    words: { title: "Words", subtitle: "Simple high-frequency word practice." },
+    parent: { title: "Parent", subtitle: "Update the word list on this device." },
+  };
+
+  elements.pageTitle.textContent = pageConfig[state.page]?.title ?? "Leo Learns!";
+  elements.headerSubtitle.textContent = pageConfig[state.page]?.subtitle ?? "";
+  elements.quickContinue.textContent = `Current: ${skill.title}`;
+}
+
+function navigate(pageName) {
+  state.page = pageName;
+
+  elements.pages.forEach((page) => {
+    page.classList.toggle("active", page.dataset.page === pageName);
+  });
+
+  elements.navButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.pageLink === pageName);
+  });
+
+  updateHeader();
+  renderHome();
+
+  if (pageName === "skills") {
+    renderSkillFilters();
+    renderSkillsList();
+  }
+
+  if (pageName === "lesson") {
+    renderLesson();
+  }
+
+  if (pageName === "words") {
+    renderWordCards();
+  }
+
+  if (pageName === "parent") {
+    elements.wordListInput.value = state.wordVault.join("\n");
+  }
+}
+
+function setLessonTab(tabName) {
+  state.lessonTab = tabName;
+
+  elements.lessonTabs.forEach((button) => {
+    button.classList.toggle("active", button.dataset.lessonTab === tabName);
+  });
+
+  elements.lessonPanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.lessonPanel === tabName);
+  });
+}
+
+function openSkill(skillId, tabName = "learn") {
+  state.activeSkillId = skillId;
+  saveActiveSkill(skillId);
+  ensureSkillState(skillId);
+  setLessonTab(tabName);
+  navigate("lesson");
 }
 
 function renderHome() {
@@ -608,153 +706,192 @@ function renderHome() {
   elements.skillCount.textContent = `${phonicsSkills.length} skills`;
   elements.homeCurrentSkill.textContent = skill.title;
   elements.homeCurrentSummary.textContent = skill.summary;
-  elements.homePatternScore.textContent = getScoreLabel(skill.id);
-  elements.homeWordCount.textContent = `${state.wordVault.length} saved ${
-    state.wordVault.length === 1 ? "word" : "words"
-  }`;
+  elements.homeCurrentCategory.textContent = getSkillCategoryLabel(skill.id);
+  elements.homePatternScore.textContent = `Pattern Check: ${getScoreLabel(skill.id)}`;
+  elements.homeWordCount.textContent = `${state.wordVault.length} saved ${state.wordVault.length === 1 ? "word" : "words"}`;
+}
+
+function renderSkillFilters() {
+  elements.skillFilters.innerHTML = "";
+
+  skillCategories.forEach((category) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `filter-chip${state.skillFilter === category.id ? " active" : ""}`;
+    button.textContent = category.label;
+    button.addEventListener("click", () => {
+      state.skillFilter = category.id;
+      renderSkillFilters();
+      renderSkillsList();
+    });
+    elements.skillFilters.appendChild(button);
+  });
 }
 
 function renderSkillsList() {
   elements.skillsList.innerHTML = "";
 
-  phonicsSkills.forEach((skill) => {
+  const filteredSkills = phonicsSkills.filter((skill) => {
+    if (state.skillFilter === "all") {
+      return true;
+    }
+    return getSkillCategoryId(skill.id) === state.skillFilter;
+  });
+
+  filteredSkills.forEach((skill) => {
     const card = document.createElement("article");
     card.className = "skill-card";
-
-    const scoreLabel = getScoreLabel(skill.id);
     card.innerHTML = `
-      <div class="skill-card-top">
+      <div class="skill-card-header">
         <div>
-          <p class="section-label">Phonics Skill</p>
+          <p class="section-label">${getSkillCategoryLabel(skill.id)}</p>
           <h3 class="skill-card-title">${skill.title}</h3>
         </div>
-        <span class="skill-pill">${skill.focus}</span>
+        <div class="lesson-meta">
+          <span class="meta-chip">${skill.focus}</span>
+          <span class="meta-chip">${getScoreLabel(skill.id)}</span>
+        </div>
       </div>
-      <p class="skill-card-summary">${skill.summary}</p>
-      <p class="skill-card-summary">Pattern Check: ${scoreLabel}</p>
-      <button class="skill-select-btn" type="button">Open ${skill.title}</button>
+      <p>${skill.summary}</p>
+      <div class="skill-examples">
+        ${skill.examples.slice(0, 3).map((example) => `<span class="skill-example-pill">${example.word}</span>`).join("")}
+      </div>
+      <button class="skill-select-btn" type="button">Open Lesson</button>
     `;
 
     card.querySelector(".skill-select-btn").addEventListener("click", () => {
-      state.activeSkillId = skill.id;
-      saveActiveSkill(skill.id);
-      navigate("lesson");
+      openSkill(skill.id, "learn");
     });
 
     elements.skillsList.appendChild(card);
   });
 }
 
-function renderLesson() {
-  const skill = getSkill();
-  const quizState = ensureQuizState(skill.id);
+function renderLearnPanel(skill) {
+  elements.learnFocusTitle.textContent = skill.focus;
+  elements.learnDescription.textContent = skill.summary;
+  elements.learnTip.textContent = "Start by saying the example words yourself. Then tap Hear Focus Words to compare the pattern.";
+  elements.learnTags.innerHTML = skill.examples
+    .map((example) => `<span class="tag-pill">${example.word}: ${example.note}</span>`)
+    .join("");
+}
+
+function renderPracticePanel(skill) {
+  const exampleIndex = state.exampleIndexBySkill[skill.id] % skill.examples.length;
+  const sentenceIndex = state.sentenceIndexBySkill[skill.id] % skill.sentences.length;
+  const currentExample = skill.examples[exampleIndex];
+  const currentSentence = skill.sentences[sentenceIndex];
+
+  elements.examplePosition.textContent = `Example ${exampleIndex + 1} of ${skill.examples.length}`;
+  elements.exampleWord.textContent = currentExample.word;
+  elements.exampleNote.textContent = `${currentExample.note}. Leo says the word first, then taps Hear Word.`;
+  elements.sentencePosition.textContent = `Sentence ${sentenceIndex + 1} of ${skill.sentences.length}`;
+  elements.sentenceText.textContent = currentSentence;
+}
+
+function renderCheckPanel(skill) {
+  const quizState = ensureSkillState(skill.id);
+
+  if (quizState.finished) {
+    elements.quizStatus.textContent = `Finished: ${quizState.lastScore}/${skill.quizQuestions.length} correct`;
+    elements.quizPrompt.textContent = "Nice work. You can restart this Pattern Check or go back and practice the lesson again.";
+    elements.quizOptions.innerHTML = "";
+    setFeedback(elements.quizFeedback, "", "");
+    elements.nextQuestion.textContent = "Start Again";
+    elements.nextQuestion.disabled = false;
+    return;
+  }
+
   const question = skill.quizQuestions[quizState.index];
-
-  elements.lessonTitle.textContent = skill.title;
-  elements.lessonSummary.textContent = skill.summary;
-  elements.lessonFocus.textContent = skill.focus;
-  elements.lessonScore.textContent = `Pattern Check: ${getScoreLabel(skill.id)}`;
-  elements.lessonFocusTitle.textContent = skill.focus;
-  elements.lessonFocusText.textContent =
-    "Read the examples first, then tap Hear Word or Hear Sentence to compare how the pattern sounds.";
-
-  elements.exampleList.innerHTML = "";
-  skill.examples.forEach((example) => {
-    const row = document.createElement("div");
-    row.className = "practice-item";
-    row.innerHTML = `
-      <div class="practice-row">
-        <div>
-          <strong class="practice-word">${example.word}</strong>
-          <span class="practice-note">${example.note}</span>
-        </div>
-        <button class="listen-btn" type="button">Hear Word</button>
-      </div>
-    `;
-
-    row.querySelector(".listen-btn").addEventListener("click", () => {
-      speakText(example.word, 0.72);
-    });
-
-    elements.exampleList.appendChild(row);
-  });
-
-  elements.sentenceList.innerHTML = "";
-  skill.sentences.forEach((sentence) => {
-    const row = document.createElement("div");
-    row.className = "sentence-item";
-    row.innerHTML = `
-      <div class="sentence-row">
-        <div>${sentence}</div>
-        <button class="listen-btn" type="button">Hear Sentence</button>
-      </div>
-    `;
-
-    row.querySelector(".listen-btn").addEventListener("click", () => {
-      speakText(sentence, 0.9);
-    });
-
-    elements.sentenceList.appendChild(row);
-  });
-
-  elements.quizProgress.textContent = `Question ${quizState.index + 1} of ${skill.quizQuestions.length}`;
+  elements.quizStatus.textContent = `Question ${quizState.index + 1} of ${skill.quizQuestions.length}`;
   elements.quizPrompt.textContent = question.prompt;
   elements.quizOptions.innerHTML = "";
   setFeedback(elements.quizFeedback, "", "");
+  elements.nextQuestion.textContent = quizState.index === skill.quizQuestions.length - 1 ? "See Score" : "Next Question";
   elements.nextQuestion.disabled = !quizState.answered;
-  elements.nextQuestion.style.opacity = quizState.answered ? "1" : "0.55";
 
   question.options.forEach((option) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "quiz-option";
     button.textContent = option;
-
     button.addEventListener("click", () => {
-      if (quizState.answered) {
-        return;
-      }
-
-      if (option === question.answer) {
-        button.classList.add("correct");
-        quizState.correct += 1;
-        quizState.answered = true;
-        setFeedback(elements.quizFeedback, `${option} is correct. Tap Next to keep going.`, "success");
-        elements.nextQuestion.disabled = false;
-        elements.nextQuestion.style.opacity = "1";
-        speakText(option, 0.72);
-      } else {
-        button.classList.add("wrong");
-        setFeedback(elements.quizFeedback, "Not that one. Try again.", "error");
-      }
+      answerQuestion(option);
     });
-
     elements.quizOptions.appendChild(button);
   });
 }
 
+function renderLesson() {
+  const skill = getSkill();
+  ensureSkillState(skill.id);
+  elements.lessonTitle.textContent = skill.title;
+  elements.lessonSummary.textContent = skill.summary;
+  elements.lessonCategoryChip.textContent = getSkillCategoryLabel(skill.id);
+  elements.lessonFocusChip.textContent = skill.focus;
+  renderLearnPanel(skill);
+  renderPracticePanel(skill);
+  renderCheckPanel(skill);
+  setLessonTab(state.lessonTab);
+}
+
+function resetQuiz(skillId = state.activeSkillId) {
+  const quizState = ensureSkillState(skillId);
+  quizState.index = 0;
+  quizState.correct = 0;
+  quizState.answered = false;
+  quizState.finished = false;
+  renderLesson();
+}
+
+function answerQuestion(option) {
+  const skill = getSkill();
+  const quizState = ensureSkillState(skill.id);
+
+  if (quizState.finished || quizState.answered) {
+    return;
+  }
+
+  const question = skill.quizQuestions[quizState.index];
+  const optionButtons = [...elements.quizOptions.querySelectorAll(".quiz-option")];
+  const selectedButton = optionButtons.find((button) => button.textContent === option);
+
+  if (!selectedButton) {
+    return;
+  }
+
+  if (option === question.answer) {
+    selectedButton.classList.add("correct");
+    quizState.correct += 1;
+    quizState.answered = true;
+    setFeedback(elements.quizFeedback, `${option} is correct.`, "success");
+    elements.nextQuestion.disabled = false;
+    speakText(option, 0.72);
+  } else {
+    selectedButton.classList.add("wrong");
+    setFeedback(elements.quizFeedback, "Try again. Look for the same pattern you practiced.", "error");
+  }
+}
+
 function advanceQuestion() {
   const skill = getSkill();
-  const quizState = ensureQuizState(skill.id);
+  const quizState = ensureSkillState(skill.id);
+
+  if (quizState.finished) {
+    resetQuiz(skill.id);
+    return;
+  }
 
   if (!quizState.answered) {
     return;
   }
 
-  const lastQuestionIndex = skill.quizQuestions.length - 1;
-
-  if (quizState.index === lastQuestionIndex) {
+  if (quizState.index === skill.quizQuestions.length - 1) {
     quizState.lastScore = quizState.correct;
-    quizState.index = 0;
-    quizState.correct = 0;
+    quizState.finished = true;
     quizState.answered = false;
     renderHome();
     renderLesson();
-    setFeedback(
-      elements.quizFeedback,
-      `Finished. Last score: ${quizState.lastScore}/${skill.quizQuestions.length}.`,
-      "success",
-    );
     return;
   }
 
@@ -765,28 +902,24 @@ function advanceQuestion() {
 
 function renderWordCards() {
   const total = state.wordVault.length;
-  const safeIndex = total ? state.currentWordIndex % total : 0;
-  const currentWord = total ? state.wordVault[safeIndex] : "Add words in Parent Setup";
 
-  elements.wordProgress.textContent = total ? `Word ${safeIndex + 1} of ${total}` : "No words loaded";
+  if (!total) {
+    elements.wordProgress.textContent = "No words loaded";
+    elements.currentWord.textContent = "Add words in Parent";
+    elements.wordStageNote.textContent = "Save a word list first, then come back here for clean word practice.";
+    elements.wordPreview.innerHTML = `<div class="preview-item">No saved words yet</div>`;
+    return;
+  }
+
+  const safeIndex = ((state.currentWordIndex % total) + total) % total;
+  const currentWord = state.wordVault[safeIndex];
+  elements.wordProgress.textContent = `Word ${safeIndex + 1} of ${total}`;
   elements.currentWord.textContent = currentWord;
-  elements.wordStageNote.textContent = total
-    ? "Leo reads the word first, then taps Hear Word to compare."
-    : "Add words in Parent Setup to start this page.";
-
-  elements.wordPreview.innerHTML = "";
-  state.wordVault.slice(0, 12).forEach((word) => {
-    const item = document.createElement("div");
-    item.className = "preview-item";
-    item.textContent = word;
-    elements.wordPreview.appendChild(item);
-  });
-}
-
-function openSkill(skillId) {
-  state.activeSkillId = skillId;
-  saveActiveSkill(skillId);
-  navigate("lesson");
+  elements.wordStageNote.textContent = "Leo reads the word first. Then tap Hear Word to compare the pronunciation.";
+  elements.wordPreview.innerHTML = state.wordVault
+    .slice(0, 12)
+    .map((word, index) => `<div class="preview-item${index === safeIndex ? " active" : ""}">${word}</div>`)
+    .join("");
 }
 
 function bindEvents() {
@@ -797,11 +930,17 @@ function bindEvents() {
   });
 
   elements.quickContinue.addEventListener("click", () => {
-    navigate("lesson");
+    openSkill(state.activeSkillId, state.lessonTab);
   });
 
-  elements.homeOpenSkill.addEventListener("click", () => {
-    navigate("lesson");
+  elements.homeStartSkill.addEventListener("click", () => {
+    openSkill(state.activeSkillId, "learn");
+  });
+
+  elements.lessonTabs.forEach((button) => {
+    button.addEventListener("click", () => {
+      setLessonTab(button.dataset.lessonTab);
+    });
   });
 
   elements.hearSkill.addEventListener("click", () => {
@@ -809,21 +948,69 @@ function bindEvents() {
     speakText(skill.examples.map((example) => example.word).join(", "), 0.76);
   });
 
+  elements.hearExample.addEventListener("click", () => {
+    const skill = getSkill();
+    const currentExample = skill.examples[state.exampleIndexBySkill[skill.id] % skill.examples.length];
+    speakText(currentExample.word, 0.72);
+  });
+
+  elements.prevExample.addEventListener("click", () => {
+    const skill = getSkill();
+    state.exampleIndexBySkill[skill.id] = (state.exampleIndexBySkill[skill.id] - 1 + skill.examples.length) % skill.examples.length;
+    renderPracticePanel(skill);
+  });
+
+  elements.nextExample.addEventListener("click", () => {
+    const skill = getSkill();
+    state.exampleIndexBySkill[skill.id] = (state.exampleIndexBySkill[skill.id] + 1) % skill.examples.length;
+    renderPracticePanel(skill);
+  });
+
+  elements.hearSentence.addEventListener("click", () => {
+    const skill = getSkill();
+    const currentSentence = skill.sentences[state.sentenceIndexBySkill[skill.id] % skill.sentences.length];
+    speakText(currentSentence, 0.9);
+  });
+
+  elements.prevSentence.addEventListener("click", () => {
+    const skill = getSkill();
+    state.sentenceIndexBySkill[skill.id] = (state.sentenceIndexBySkill[skill.id] - 1 + skill.sentences.length) % skill.sentences.length;
+    renderPracticePanel(skill);
+  });
+
+  elements.nextSentence.addEventListener("click", () => {
+    const skill = getSkill();
+    state.sentenceIndexBySkill[skill.id] = (state.sentenceIndexBySkill[skill.id] + 1) % skill.sentences.length;
+    renderPracticePanel(skill);
+  });
+
   elements.nextQuestion.addEventListener("click", () => {
     advanceQuestion();
   });
 
+  elements.restartCheck.addEventListener("click", () => {
+    resetQuiz();
+  });
+
   elements.hearCurrentWord.addEventListener("click", () => {
     if (state.wordVault.length) {
-      speakText(state.wordVault[state.currentWordIndex % state.wordVault.length], 0.72);
+      const safeIndex = ((state.currentWordIndex % state.wordVault.length) + state.wordVault.length) % state.wordVault.length;
+      speakText(state.wordVault[safeIndex], 0.72);
     }
+  });
+
+  elements.prevWord.addEventListener("click", () => {
+    if (!state.wordVault.length) {
+      return;
+    }
+    state.currentWordIndex = (state.currentWordIndex - 1 + state.wordVault.length) % state.wordVault.length;
+    renderWordCards();
   });
 
   elements.nextWord.addEventListener("click", () => {
     if (!state.wordVault.length) {
       return;
     }
-
     state.currentWordIndex = (state.currentWordIndex + 1) % state.wordVault.length;
     renderWordCards();
   });
@@ -855,12 +1042,14 @@ function bindEvents() {
 function init() {
   state.wordVault = loadWordVault();
   state.activeSkillId = loadActiveSkill();
-  phonicsSkills.forEach((skill) => ensureQuizState(skill.id));
+  phonicsSkills.forEach((skill) => ensureSkillState(skill.id));
   bindEvents();
-  renderSkillsList();
   renderHome();
+  renderSkillFilters();
+  renderSkillsList();
   renderLesson();
   renderWordCards();
+  updateHeader();
   navigate("home");
 }
 
